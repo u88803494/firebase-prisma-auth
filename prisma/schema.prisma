@@ -1,0 +1,93 @@
+// ================================================
+// Prisma Configuration
+// ================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"  // 開發環境
+  // provider = "postgresql"  // 生產環境（取消註解並修改 DATABASE_URL）
+  url      = env("DATABASE_URL")
+}
+
+// ================================================
+// User Model - 用戶主表
+// ================================================
+
+model User {
+  // ────────────────────────────────
+  // 主鍵和唯一識別
+  // ────────────────────────────────
+  id              Int      @id @default(autoincrement())
+  uid             String   @unique       // Firebase UID（全域唯一）
+
+  // ────────────────────────────────
+  // 基本資訊
+  // ────────────────────────────────
+  email           String?  @unique       // Email 地址（唯一，LINE 用戶可能為空）
+  phoneNumber     String?  @unique       // 手機號碼（唯一，OAuth 用戶完成註冊前為空）
+
+  // ────────────────────────────────
+  // 認證資訊
+  // ────────────────────────────────
+  password        String?                // 密碼 Hash（手動註冊才有）
+                                         // OAuth 註冊用戶此欄位為 null
+
+  // ────────────────────────────────
+  // 個人資訊（可選）
+  // ────────────────────────────────
+  displayName     String?                // 顯示名稱
+  photoURL        String?                // 大頭照 URL
+  birthDate       DateTime?              // 生日
+  gender          String?                // 性別 "male" | "female" | "other"
+  profileCompleted Boolean @default(false) // 個人資料是否已完善
+
+  lastLoginAt     DateTime?              // 最後登入時間
+
+
+  // ────────────────────────────────
+  // OAuth Provider IDs（可選）
+  // ────────────────────────────────
+  googleId        String?  @unique       // Google OAuth ID
+  facebookId      String?  @unique       // Facebook OAuth ID
+  lineId          String?  @unique       // LINE OAuth ID
+
+  // ────────────────────────────────
+  // 驗證狀態
+  // ────────────────────────────────
+  emailVerified   Boolean  @default(false)  // Email 是否已驗證
+  phoneVerified   Boolean  @default(false)  // 手機是否已驗證（OTP 驗證）
+
+  // ────────────────────────────────
+  // 時間戳記
+  // ────────────────────────────────
+  createdAt       DateTime @default(now())  // 建立時間
+  updatedAt       DateTime @updatedAt       // 更新時間
+
+  // ────────────────────────────────
+  // 索引優化
+  // ────────────────────────────────
+  @@index([email])         // 加速 Email 查詢
+  @@index([phoneNumber])   // 加速手機號碼查詢
+  @@index([uid])           // 加速 Firebase UID 查詢
+  @@index([googleId])      // 加速 Google OAuth 查詢
+  @@index([facebookId])    // 加速 Facebook OAuth 查詢
+  @@index([lineId])        // 加速 LINE OAuth 查詢
+
+  // ────────────────────────────────
+  // 資料表映射名稱
+  // ────────────────────────────────
+  @@map("users")
+}
+
+// ================================================
+// 注意：OTPVerification Model 已移除
+// ================================================
+//
+// 我們現在使用 Firebase Phone Authentication 進行電話號碼驗證
+// Firebase 自動處理 OTP 的生成、發送和驗證
+// 不再需要在資料庫中儲存 OTP 記錄
+//
+// ================================================
