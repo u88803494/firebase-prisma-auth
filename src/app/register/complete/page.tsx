@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -11,7 +11,7 @@ import {
   cleanupRecaptcha,
 } from '@/lib/firebasePhoneAuth';
 
-export default function CompleteRegistrationPage() {
+function CompleteRegistrationPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -508,5 +508,18 @@ export default function CompleteRegistrationPage() {
         </div>
       </div>
     </>
+  );
+}
+
+// Wrap with Suspense to satisfy Next.js 15 useSearchParams requirement
+export default function CompleteRegistrationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+      </div>
+    }>
+      <CompleteRegistrationPageContent />
+    </Suspense>
   );
 }
