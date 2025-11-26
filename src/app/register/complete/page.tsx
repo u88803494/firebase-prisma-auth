@@ -34,19 +34,13 @@ function CompleteRegistrationPageContent() {
   const firebaseUser = auth.currentUser;
 
   // ────────────────────────────────
-  // Firebase 測試手機號碼列表
+  // Firebase 測試手機號碼列表 (only visible in development)
   // ────────────────────────────────
+  const isDev = process.env.NODE_ENV === 'development';
   const testPhoneNumbers = [
-    { phone: '+886912345003', otp: '111111' },
-    { phone: '+886912345002', otp: '123456' },
-    { phone: '+886929000002', otp: '123456' },
-    { phone: '+886929000001', otp: '123456' },
-    { phone: '+886912345001', otp: '123456' },
-    { phone: '+886929000004', otp: '123456' },
-    { phone: '+886929000006', otp: '123456' },
-    { phone: '+886929000005', otp: '123456' },
-    { phone: '+886929013192', otp: '123456' },
-    { phone: '+886939163302', otp: '123456' },
+    { phone: '+886900000003', otp: '111111' },
+    { phone: '+886900000002', otp: '111111' },
+    { phone: '+886900000001', otp: '111111' },
   ];
 
   // ────────────────────────────────
@@ -381,7 +375,7 @@ function CompleteRegistrationPageContent() {
                   required
                 />
                 <p className="mt-2 text-sm text-gray-500">
-                  請輸入完整的手機號碼（例如：+886912345003）
+                  請輸入完整的手機號碼（例如：+886912345678）
                 </p>
               </div>
 
@@ -475,38 +469,40 @@ function CompleteRegistrationPageContent() {
         </div>
       </div>
 
-      {/* 測試手機號碼側邊欄（固定在右側） */}
-      <div className="hidden lg:block fixed right-8 top-1/2 -translate-y-1/2 w-80 z-10">
-        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">
-            📱 測試手機號碼
-          </h3>
-          <p className="text-xs text-gray-600 mb-4">
-            點擊號碼可自動填入
-          </p>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {testPhoneNumbers.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setPhoneNumber(item.phone);
-                  setStep('phone');
-                  setError(null);
-                }}
-                disabled={loading}
-                className="w-full text-left p-3 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors border border-gray-200 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="font-mono text-sm text-gray-900">
-                  {item.phone}
-                </div>
-                <div className="text-xs text-gray-600 mt-1">
-                  驗證碼: {item.otp}
-                </div>
-              </button>
-            ))}
+      {/* 測試手機號碼側邊欄（固定在右側）- 僅在開發環境顯示 */}
+      {isDev && (
+        <div className="hidden lg:block fixed right-8 top-1/2 -translate-y-1/2 w-80 z-10">
+          <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
+              📱 測試手機號碼
+            </h3>
+            <p className="text-xs text-gray-600 mb-4">
+              點擊號碼可自動填入（僅開發環境）
+            </p>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {testPhoneNumbers.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setPhoneNumber(item.phone);
+                    setStep('phone');
+                    setError(null);
+                  }}
+                  disabled={loading}
+                  className="w-full text-left p-3 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors border border-gray-200 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="font-mono text-sm text-gray-900">
+                    {item.phone}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    驗證碼: {item.otp}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
