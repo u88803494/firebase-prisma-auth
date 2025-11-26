@@ -52,3 +52,4 @@ coverage/
 
 /src/generated/prisma
 tsconfig.tsbuildinfo
+.playwright-mcp/
