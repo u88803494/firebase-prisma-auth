@@ -1,7 +1,32 @@
-# Firebase Setup Guide
+# Firebase 設定指南
 
-> **Last Updated**: 2025-11-26
-> **Purpose**: Document Firebase project setup, pricing plans, and GCP billing considerations
+> **最後更新**：2025-11-26
+> **用途**：記錄 Firebase 專案設定、方案價格、GCP 計費相關資訊
+> **專案名稱**：`fir-prisma-auth-dev`（Spark 免費方案）
+
+---
+
+## 目前專案狀態
+
+### 已啟用的 OAuth 提供商
+
+| 提供商 | 狀態 | 備註 |
+|--------|------|------|
+| **Google** | ✅ 已啟用 | 主要 OAuth 提供商 |
+| **GitHub** | ✅ 已啟用 | OAuth App 已設定 |
+| **Facebook** | ✅ 已啟用 | App 為開發模式 |
+| **手機 (OTP)** | ✅ 已啟用 | 測試號碼已設定 |
+| **LINE (OIDC)** | ❌ 未啟用 | 需要 Blaze 方案 |
+
+### 測試用電話號碼（僅限開發環境）
+
+| 電話號碼 | OTP 驗證碼 | 備註 |
+|----------|-----------|------|
+| `+886900000001` | `111111` | 測試帳號 1 |
+| `+886900000002` | `111111` | 測試帳號 2 |
+| `+886900000003` | `111111` | 測試帳號 3 |
+
+> **注意**：測試電話號碼只在 Firebase Console 測試環境有效。真實電話號碼會發送實際簡訊。
 
 ---
 
@@ -21,9 +46,10 @@
 |---------|-------|-------|-------|
 | **Email/Password Auth** | ✅ | ✅ | 50,000 MAU free |
 | **Google OAuth** | ✅ | ✅ | 50,000 MAU free |
+| **GitHub OAuth** | ✅ | ✅ | 50,000 MAU free |
 | **Facebook OAuth** | ✅ | ✅ | 50,000 MAU free |
 | **Phone Auth (SMS OTP)** | ✅ | ✅ | Limited SMS quota |
-| **OpenID Connect (OIDC)** | ❌ | ✅ | Requires Identity Platform |
+| **OpenID Connect (OIDC)** | ❌ | ✅ | Requires Identity Platform (LINE) |
 | **SAML** | ❌ | ✅ | Requires Identity Platform |
 | **Cloud Functions** | ❌ | ✅ | |
 | **Cloud Storage** | ❌ | ✅ | Changed Oct 2024 |
@@ -93,13 +119,14 @@ On Spark plan, LINE Login is **not available** because:
 1. OIDC provider appears grayed out in Firebase Console
 2. Identity Platform features require Blaze plan
 
-### Workaround for Development
+### 開發替代方案
 
-For POC/development without Blaze:
-- ✅ Use Google OAuth (works on Spark)
-- ✅ Use Facebook OAuth (works on Spark)
-- ✅ Use Phone Auth with test numbers (works on Spark)
-- ❌ LINE Login (requires Blaze)
+在不升級 Blaze 的情況下進行 POC/開發：
+- ✅ 使用 Google OAuth（Spark 方案可用）
+- ✅ 使用 GitHub OAuth（Spark 方案可用）
+- ✅ 使用 Facebook OAuth（Spark 方案可用）
+- ✅ 使用手機驗證搭配測試號碼（Spark 方案可用）
+- ❌ LINE 登入（需要 Blaze 方案）
 
 ---
 
@@ -116,22 +143,73 @@ Firebase Console → Add project
 
 ### 2. Enable Authentication Providers
 
+#### Google OAuth
 ```
-Build → Authentication → Sign-in method
-→ Enable: Google
-→ Enable: Phone
-→ (Optional) Enable: Facebook
+Build → Authentication → Sign-in method → Google
+→ 啟用
+→ 支援電子郵件：your@email.com
+→ 儲存
 ```
 
-### 3. Add Test Phone Numbers
+#### GitHub OAuth
+```
+1. 建立 GitHub OAuth App：
+   GitHub → Settings → Developer settings → OAuth Apps → New OAuth App
+   → Application name: Firebase Prisma Auth
+   → Homepage URL: http://localhost:3000
+   → Authorization callback URL: https://fir-prisma-auth-dev.firebaseapp.com/__/auth/handler
+   → Register application
+   → 複製 Client ID 和 Client Secret
+
+2. 在 Firebase 設定：
+   Build → Authentication → Sign-in method → GitHub
+   → 啟用
+   → 貼上 Client ID 和 Client Secret
+   → 儲存
+```
+
+#### Facebook OAuth
+```
+1. 建立 Facebook App：
+   https://developers.facebook.com → My Apps → Create App
+   → 使用案例：透過 Facebook 登入進行驗證並要求使用者資料
+   → App 名稱：Firebase Prisma Auth
+   → 建立應用程式
+
+2. 設定 Facebook Login：
+   Facebook App → 使用案例 → 自訂 → 設定
+   → 有效的 OAuth 重新導向 URI：https://fir-prisma-auth-dev.firebaseapp.com/__/auth/handler
+   → 儲存變更
+
+3. 取得 App 憑證：
+   應用程式設定 → 基本資料
+   → 複製 App ID 和 App Secret
+
+4. 在 Firebase 設定：
+   Build → Authentication → Sign-in method → Facebook
+   → 啟用
+   → 貼上 App ID 和 App Secret
+   → 儲存
+```
+
+#### 手機 (OTP)
+```
+Build → Authentication → Sign-in method → Phone
+→ 啟用
+→ 儲存
+```
+
+### 3. 新增測試用電話號碼
 
 ```
 Authentication → Sign-in method → Phone
-→ Phone numbers for testing
-→ Add: +886900000000 / 123456
+→ 測試用電話號碼
+→ 新增：+886900000001 / 111111
+→ 新增：+886900000002 / 111111
+→ 新增：+886900000003 / 111111
 ```
 
-This allows development without sending real SMS.
+這樣可以在開發時不發送真實簡訊，避免產生費用。
 
 ### 4. Get Web App Configuration
 
@@ -190,23 +268,24 @@ This provides early warning before any unexpected charges.
 
 ## Summary: Development Strategy
 
-### For POC Development (Preserve GCP Credits)
+### POC 開發策略（保留 GCP 免費額度）
 
-| Feature | Available | Alternative |
-|---------|-----------|-------------|
-| Google OAuth | ✅ Yes | - |
-| Facebook OAuth | ✅ Yes | - |
-| Phone OTP | ✅ Yes | Use test phone numbers |
-| LINE Login | ❌ No | Skip for now, upgrade later |
-| Email+Password | ✅ Yes | Via Prisma + Custom Token |
+| 功能 | 可用 | 替代方案 |
+|------|------|----------|
+| Google OAuth | ✅ 是 | - |
+| GitHub OAuth | ✅ 是 | - |
+| Facebook OAuth | ✅ 是 | - |
+| 手機 OTP | ✅ 是 | 使用測試電話號碼 |
+| LINE 登入 | ❌ 否 | 暫時跳過，之後再升級 |
+| Email+密碼 | ✅ 是 | 透過 Prisma + Custom Token |
 
-### For Production (Full Features)
+### 生產環境（完整功能）
 
-1. Upgrade to Blaze plan
-2. Enable Identity Platform for OIDC
-3. Configure LINE Login
-4. Set up budget alerts
-5. Monitor SMS usage
+1. 升級到 Blaze 方案
+2. 啟用 Identity Platform 以支援 OIDC
+3. 設定 LINE 登入
+4. 設定預算警報
+5. 監控簡訊用量
 
 ---
 
