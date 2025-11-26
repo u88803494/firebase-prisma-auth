@@ -1,6 +1,6 @@
 # OAuth 認證系統 - 文檔導航
 
-> 最後更新：2025-11-18
+> 最後更新：2025-11-26
 > 專案狀態：📋 文檔整理完成，準備開始實作
 
 ## 📌 專案概述
@@ -59,6 +59,13 @@
 - **[環境設定指南](./implementation/SETUP_GUIDE.md)** - 從零開始的設定步驟（待建立）
 - **[編碼規範](./implementation/CODING_STANDARDS.md)** - 代碼風格和最佳實踐（待建立）
 - **[測試策略](./implementation/TESTING_STRATEGY.md)** - 測試方法和檢查清單（待建立）
+
+### 🔥 Firebase 文檔
+Firebase 設定和整合指南
+
+- **[Firebase 設定指南](./FIREBASE_SETUP_GUIDE.md)** - 方案選擇、計費說明、GCP 關係
+- **[LINE 登入整合](./LINE_LOGIN_INTEGRATION.md)** - LINE OIDC 設定（需 Blaze 方案）
+- **[ADC 設定指南](./ADC_SETUP.md)** - Application Default Credentials
 
 ### 🔧 [維運文檔](./operations/)
 部署和維護相關
